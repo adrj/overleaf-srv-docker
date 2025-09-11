@@ -1,0 +1,78 @@
+services:
+  sharelatex:
+    restart: always
+    image: sharelatex/sharelatex:latest
+    container_name: sharelatex
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "80:80"
+    volumes:
+      - ./sharelatex_data:/var/lib/overleaf
+      - ./tmp:/var/lib/overleaf/tmp
+    environment:
+      OVERLEAF_APP_NAME: "Overleaf Community Edition"
+      OVERLEAF_MONGO_URL: mongodb://mongo:27017/sharelatex?replicaSet=rs0
+      OVERLEAF_REDIS_HOST: redis
+      REDIS_HOST: redis
+      ENABLED_LINKED_FILE_TYPES: 'project_file,project_output_file'
+      ENABLE_CONVERSIONS: 'true'
+      # Permitir registro público
+      OVERLEAF_ALLOW_PUBLIC_ACCESS: 'true'
+      OVERLEAF_ALLOW_ANONYMOUS_READ_AND_WRITE_SHARING: 'true'
+      # Configurações opcionais de email (descomente e configure se necessário)
+      # OVERLEAF_EMAIL_FROM_ADDRESS: "noreply@overleaf.local"
+      # OVERLEAF_EMAIL_SMTP_HOST: smtp.gmail.com
+      # OVERLEAF_EMAIL_SMTP_PORT: 587
+      # OVERLEAF_EMAIL_SMTP_SECURE: "false"
+      # OVERLEAF_EMAIL_SMTP_USER: seu-email@gmail.com
+      # OVERLEAF_EMAIL_SMTP_PASS: sua-senha-app
+      # OVERLEAF_EMAIL_SMTP_TLS_REJECT_UNAUTH: "true"
+      # OVERLEAF_EMAIL_SMTP_IGNORE_TLS: "false"
+      # Configuração de site
+      OVERLEAF_SITE_URL: "http://localhost"
+      OVERLEAF_NAV_TITLE: "Overleaf Community Edition"
+      # Usuário admin padrão (altere as credenciais)
+      OVERLEAF_ADMIN_EMAIL: admin@overleaf.local
+      OVERLEAF_ADMIN_PASSWORD: password123
+    networks:
+      - overleaf-network
+
+  mongo:
+    restart: always
+    image: mongo:6.0
+    container_name: mongo
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - ./mongo_data:/data/db
+    healthcheck:
+      test: echo 'db.stats().ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - overleaf-network
+
+  redis:
+    restart: always
+    image: redis:6.2
+    container_name: redis
+    volumes:
+      - ./redis_data:/data
+    networks:
+      - overleaf-network
+
+networks:
+  overleaf-network:
+    driver: bridge
+
+volumes:
+  sharelatex_data:
+    driver: local
+  mongo_data:
+    driver: local
+  redis_data:
+    driver: local
