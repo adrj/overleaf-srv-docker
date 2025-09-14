@@ -4,20 +4,40 @@ mongo_data/
 redis_data/
 tmp/
 
-# Logs
-*.log
-logs/
-
-# Arquivos temporários
-.DS_Store
-Thumbs.db
-
-# Variáveis de ambiente locais
+# Arquivos de ambiente
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# Backups
+# Logs
+*.log
+logs/
+
+# Arquivos temporários
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Arquivos de backup
 *_backup/
 *.bak
+*.backup
+backup-*
+
+# IDEs e editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+docker-compose.override.yml
+.docker/
+
+# Certificados e chaves
+*.pem
+*.key
+*.crt
